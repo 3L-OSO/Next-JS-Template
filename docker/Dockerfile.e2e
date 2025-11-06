@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.56.1-jammy
+
+SHELL ["/bin/bash", "-lc"]
+WORKDIR /work
+RUN npm i -g pnpm
+
+EXPOSE 9323

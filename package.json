@@ -18,8 +18,10 @@
     "format": "prettier --write .",
     "lint": "eslint",
     "start": "next start",
-    "test:unit": "vitest",
-    "test:e2e": "playwright test",
+    "test": "vitest",
+    "e2e:headed": "tsx scripts/e2e.ts --headed",
+    "e2e:headless": "tsx scripts/e2e.ts",
+    "e2e:report": "tsx scripts/e2e.ts --report",
     "tsx": "tsx"
   },
   "dependencies": {
