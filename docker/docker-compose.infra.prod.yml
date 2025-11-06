@@ -1,0 +1,55 @@
+services:
+  proxy:
+    image: traefik:v3.4
+    container_name: traefik_proxy
+    restart: unless-stopped
+    command:
+      # Providers
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.websecure.address=:443
+      # Utiliser par défaut le resolver ACME "le" sur l'entrée HTTPS
+      - --entrypoints.websecure.http.tls.certresolver=le
+
+      # ACME / Let's Encrypt
+      - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL:?LETSENCRYPT_EMAIL est absent}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory # Utiliser le serveur de staging pour les tests (à supprimer en production)
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - web-network
+
+  postgres:
+    image: postgres:17
+    container_name: postgres_todo
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: '${DB_NAME:?DB_NAME est absent}'
+      POSTGRES_USER: '${DB_USER:?DB_USER est absent}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:?DB_PASSWORD est absent}'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - database-network
+
+volumes:
+  letsencrypt:
+  postgres_data:
+
+networks:
+  web-network:
+    driver: bridge
+  database-network:
+    driver: bridge

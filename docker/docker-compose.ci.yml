@@ -1,0 +1,31 @@
+services:
+  postgres-test-todo:
+    image: postgres:17
+    container_name: postgres-test-todo
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: '${DB_NAME:?DB_NAME est absent}'
+      POSTGRES_USER: '${DB_USER:?DB_USER est absent}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:?DB_PASSWORD est absent}'
+    networks:
+      - database-network-test
+
+  todo-app-test:
+    depends_on:
+      - postgres-test-todo
+    build:
+      context: ${PWD}
+      dockerfile: ${PWD}/docker/Dockerfile.test
+    container_name: todo-app-test
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres-test-todo
+      DB_PORT: 5432
+    env_file:
+      - ${PWD}/.env
+    networks:
+      - database-network-test
+
+networks:
+  database-network-test:
+    driver: bridge

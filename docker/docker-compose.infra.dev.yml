@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres_todo
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: '${DB_NAME:?DB_NAME est absent}'
+      POSTGRES_USER: '${DB_USER:?DB_USER est absent}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:?DB_PASSWORD est absent}'
+    ports:
+      - '${DB_PORT:?DB_PORT est absent}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

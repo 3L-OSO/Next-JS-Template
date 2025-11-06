@@ -1,0 +1,34 @@
+services:
+  todo-app:
+    build:
+      context: ${PWD}
+      dockerfile: ${PWD}/docker/Dockerfile.prod
+    container_name: todo-app
+    environment:
+      NODE_ENV: production
+    env_file:
+      - ${PWD}/.env
+    networks:
+      - web-network
+      - database-network
+    labels:
+      - 'traefik.enable=true'
+
+      # Router HTTP → va automatiquement être redirigé vers HTTPS par Traefik
+      - 'traefik.http.routers.todo.rule=Host(`${DOMAIN_NAME:?DOMAIN_NAME est absent}`)'
+      - 'traefik.http.routers.todo.entrypoints=web'
+
+      # Router HTTPS
+      - 'traefik.http.routers.todo-secure.rule=Host(`${DOMAIN_NAME:?DOMAIN_NAME est absent}`)'
+      - 'traefik.http.routers.todo-secure.entrypoints=websecure'
+      - 'traefik.http.routers.todo-secure.tls=true'
+      - 'traefik.http.routers.todo-secure.tls.certresolver=le'
+
+      # Service (le port sur lequel ton app écoute dans le container)
+      - 'traefik.http.services.todo.loadbalancer.server.port=3000'
+
+networks:
+  web-network:
+    external: true
+  database-network:
+    external: true
